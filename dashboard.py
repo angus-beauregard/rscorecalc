@@ -319,8 +319,12 @@ def show_dashboard():
         df = st.session_state["courses"].copy()
         if not df.empty:
             df["rscore"] = df.apply(
-                lambda row: compute_rscore_excel(
-                    row["mark"], row["group_avg"], row["group_sd"]
+                lambda row: compute_rscore_school_based(
+                    row["mark"],
+                row["group_avg"],
+                row["group_sd"],
+                idgz=school_idgz,
+                isgz=school_isgz,
                 ),
                 axis=1,
             )
@@ -376,6 +380,7 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
+
 
 
 
