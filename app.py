@@ -6,7 +6,8 @@ from free_page import show_free_page
 from auth import show_auth
 from dashboard import show_dashboard
 from payments import show_payment
-from tos import show_tos  # <— we'll make this
+from success import show_success
+from tos import show_tos
 
 st.set_page_config(page_title="RScoreCalc", layout="wide", page_icon="📈")
 
@@ -25,6 +26,8 @@ elif page == "dashboard":
     show_dashboard()
 elif page == "payment":
     show_payment()
+elif page == "success":
+    show_success()
 elif page == "tos":
     show_tos()
 else:
