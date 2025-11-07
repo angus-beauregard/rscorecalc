@@ -55,12 +55,28 @@ ISG_AVG = RSCORE_PARAMS["isg_avg"]
 
 
 # ===== 2. R-score math =====
-def compute_rscore_excel(mark, group_avg, group_sd, isg=ISG_AVG, base=BASE_CONST):
+def compute_rscore_school_based(
+    mark: float,
+    group_avg: float,
+    group_sd: float,
+    idgz: float = 1.0,
+    isgz: float = 0.0,
+    C: float = 35.0,
+    D: float = 1.0,
+) -> float:
+    """
+    R score = ((Zcol * IDGZ) + ISGZ + C) * D
+    - Zcol = (mark - group_avg) / group_sd
+    - IDGZ, ISGZ come from your high school CSV
+    - C, D: we keep C=35, D=1 to stay close to cegep style results
+    """
     if group_sd is None or group_sd == 0:
-        z = 0
+        z = 0.0
     else:
         z = (mark - group_avg) / group_sd
-    return round((z * 5) + isg + base, 2)
+
+    r = ((z * idgz) + isgz + C) * D
+    return round(r, 2)
 
 
 def compute_overall_rscore(df: pd.DataFrame) -> float:
@@ -343,4 +359,5 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
+
 
