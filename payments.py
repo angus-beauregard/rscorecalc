@@ -1,15 +1,45 @@
 # payments.py
 import streamlit as st
-
-STRIPE_CHECKOUT_URL = "https://buy.stripe.com/9B68wPcz4d4bbNgc9id7q00"
+import stripe
 
 def show_payment():
     st.markdown("## Upgrade to Premium")
-    st.markdown("You're almost there. Complete your payment to unlock the full RScore dashboard.")
-    st.link_button("Go to secure Stripe checkout", STRIPE_CHECKOUT_URL)
 
-    st.markdown("After payment, you can mark the user as premium in Supabase (table: `users`, column: `is_premium = true`).")
+    user_email = st.session_state.get("user_email")
+    if not user_email:
+        st.warning("You need to sign in first.")
+        if st.button("Go to sign in"):
+            st.session_state["page"] = "auth"
+            st.rerun()
+        return
 
-    if st.button("⬅ Back"):
-        st.session_state["page"] = "landing"
-        st.rerun()
+    stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
+    base_url = st.secrets["APP_BASE_URL"]
+
+    st.write("You're about to subscribe to **RScoreCalc Pro** (test mode).")
+
+    if st.button("Go to Stripe checkout"):
+        # create checkout session
+        checkout_session = stripe.checkout.Session.create(
+            mode="subscription",   # or "payment" if one-time
+            line_items=[
+                {
+                    "price": "price_xxxxxxxxxxxxx",  # <-- put your Stripe PRICE ID here
+                    "quantity": 1,
+                }
+            ],
+            customer_email=user_email,
+            success_url=f"{base_url}?page=success&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base_url}?page=payment",
+        )
+
+        # redirect with javascript
+        st.markdown(
+            f"""
+            <script>
+            window.location.href = "{checkout_session.url}";
+            </script>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.info("Use Stripe test card 4242 4242 4242 4242 to test.")
