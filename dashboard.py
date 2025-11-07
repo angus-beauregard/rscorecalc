@@ -173,12 +173,15 @@ def show_dashboard():
     if "target_r" not in st.session_state:
         st.session_state["target_r"] = 30.0
     if "selected_school" not in st.session_state:
-        st.session_state["selected_school"] = "John Abbott College"
-    if "semester_end" not in st.session_state:
-        st.session_state["semester_end"] = datetime.date(2025, 12, 19)
+        st.session_state["selected_school"] = "(default)"
+
+    # load high school / board data
+    hs_df = load_idgz_table()
+    school_options = hs_df["school"].tolist()
 
     st.markdown("## 📈 RScore Premium Dashboard")
     st.markdown("Upload your grades, get your R-score, track gains, and work toward a target.")
+
 
     left, right = st.columns([1.2, 0.8])
 
@@ -299,6 +302,20 @@ def show_dashboard():
 
     # ===== RIGHT OVERVIEW =====
     with right:
+        # pick school / board
+        selected_school = st.selectbox(
+            "High school / board (for IDGZ & ISGZ)",
+            options=school_options,
+            index=school_options.index(st.session_state["selected_school"])
+            if st.session_state["selected_school"] in school_options
+            else 0,
+        )
+        st.session_state["selected_school"] = selected_school
+
+        # fetch that row
+        row = hs_df[hs_df["school"] == selected_school].iloc[0]
+        school_idgz = float(row.get("idgz", 1.0)) if not pd.isna(row.get("idgz")) else 1.0
+        school_isgz = float(row.get("isgz", 0.0)) if not pd.isna(row.get("isgz")) else 0.
         df = st.session_state["courses"].copy()
         if not df.empty:
             df["rscore"] = df.apply(
@@ -359,5 +376,6 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
+
 
 
