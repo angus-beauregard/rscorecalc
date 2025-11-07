@@ -24,7 +24,7 @@ def show_payment():
             mode="subscription",   # or "payment" if one-time
             line_items=[
                 {
-                    "price": "price_xxxxxxxxxxxxx",  # <-- put your Stripe PRICE ID here
+                    "price": "price_1SQqvSHm1An0Oa2hLoDpgaZw",  # <-- put your Stripe PRICE ID here
                     "quantity": 1,
                 }
             ],
@@ -43,3 +43,4 @@ def show_payment():
             unsafe_allow_html=True,
         )
     st.info("Use Stripe test card 4242 4242 4242 4242 to test.")
+
