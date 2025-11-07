@@ -7,7 +7,30 @@ import streamlit as st
 from ocr_engine import extract_courses_from_image  # keep your stub
 
 EXCEL_RSCORE_FILE = "R-Score Calculator (perfect).xlsx"
+IDGZ_CSV_PATH = "idgz+isgz_data.csv"   # the file you uploaded
 
+
+def load_idgz_table(path: str = IDGZ_CSV_PATH) -> pd.DataFrame:
+    """Load the high school / board table with IDGZ and ISGZ."""
+    if not os.path.exists(path):
+        # fallback: empty df
+        return pd.DataFrame(
+            {
+                "School Board": ["(default)"],
+                "ISGZ Estimate": [0.0],
+                "IDGZ Estimate": [1.0],
+            }
+        )
+    df = pd.read_csv(path)
+    # standardize columns
+    df = df.rename(
+        columns={
+            "School Board": "school",
+            "ISGZ Estimate": "isgz",
+            "IDGZ Estimate": "idgz",
+        }
+    )
+    return df
 
 # ===== 1. Excel params (same idea as before) =====
 def load_excel_rscore_params(path: str):
@@ -320,3 +343,4 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
+
