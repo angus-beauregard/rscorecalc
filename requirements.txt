@@ -1,0 +1,24 @@
+# Core Streamlit app
+streamlit==1.51.0
+pandas==2.3.3
+openpyxl==3.1.2
+numpy==2.1.2
+
+# Supabase auth integration (modern SDK)
+supabase==2.5.0
+
+# OCR (for your future OCR upload tab)
+pytesseract==0.3.10
+Pillow==10.3.0
+
+# Web requests and JSON handling
+requests==2.32.3
+
+# Stripe integration (simple link button)
+stripe==10.5.0
+
+# If you use csv reading or file uploads
+python-multipart==0.0.9
+
+# Optional (helps with dataframe editing and CSV parsing in Streamlit)
+pyarrow==17.0.0
