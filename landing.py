@@ -82,6 +82,13 @@ def show_landing():
             border: 1px solid #e2e8f0;
             border-radius: 1rem;
             padding: 1rem 1.1rem;
+            line-height: 1.6;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.3rem;
+            font-size: 0.85rem;
         }
         </style>
         """,
@@ -113,9 +120,9 @@ def show_landing():
     st.markdown('<div class="section-title">What you get</div>', unsafe_allow_html=True)
     st.markdown(
         """
-    - ✅ R-score calculator tied to your uploaded grades  
-    - 📊 Biggest gains tool to show what class moves your R the most  
-    - 🎯 Goals + semester countdown  
+    - ✅ R-score calculator tied to your real grades  
+    - 📊 “Biggest gains” tool showing what class raises your R the most  
+    - 🎯 Goal tracker + semester countdown  
     - 💳 Stripe-ready premium upgrade  
     """
     )
@@ -142,25 +149,35 @@ def show_landing():
         st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ===== ABOUT: how we calculate your R-score =====
-    st.markdown('<div class="section-title">How we calculate your R-score</div>', unsafe_allow_html=True)
+    # ===== ABOUT SECTION =====
+    st.markdown('<div class="section-title">How your R-score is calculated</div>', unsafe_allow_html=True)
     st.markdown(
         """
         <div class="about-card">
-            <p style="margin-bottom:0.5rem;">
-            We follow the same structure used in Québec CÉGEPs, then adjust with the school factors you upload.
-            </p>
-            <ol style="padding-left:1.1rem; margin-top:0.5rem;">
-                <li>We read your grade, the class average, and the class standard deviation (SD) from your CSV / OCR.</li>
-                <li>We compute a Z-score: <code>Z = (your grade – class average) ÷ SD</code>.</li>
-                <li>We look up your high school / board in your <em>IDGZ / ISGZ</em> CSV to get its strength values.</li>
-                <li>We apply your working formula: <strong>R = ((Z × IDGZ) + ISGZ + C) × D</strong>, where we typically use C ≈ 35 and D = 1.</li>
-            </ol>
-            <p style="margin-top:0.5rem;">
-            When we don’t find your school in the file, we fall back to neutral values (IDGZ=1, ISGZ=0) so you still get a number.
-            </p>
-            <p style="margin-top:0.5rem; font-size:0.8rem; color:#475569;">
-            Sources we mirror: MES documentation on the Cote R, public explanations from CÉGEPs, and your own school-strength CSV.
+            <p><strong>Your R-score represents how you perform compared to your classmates and your school’s overall academic strength.</strong></p>
+
+            <p>Each course you take generates its own <em>individual R-score</em> using the official structure used by Québec CÉGEPs:</p>
+
+            <p style="margin:0.5rem 0;"><code>R = ((Z × IDGZ) + ISGZ + C) × D</code></p>
+
+            <p>Here’s what each part means:</p>
+            <ul style="margin-left:1rem;">
+                <li><strong>Z</strong> – a standardized measure of how far your grade is from the class average, based on the class’s standard deviation.</li>
+                <li><strong>IDGZ</strong> – reflects how strong your specific class group is academically.</li>
+                <li><strong>ISGZ</strong> – reflects how strong your high school or school board is overall.</li>
+                <li><strong>C</strong> and <strong>D</strong> – constants used to keep R-scores in the typical Québec range (we use C ≈ 35 and D = 1).</li>
+            </ul>
+
+            <p>Once every course has its own R-score, we calculate your <strong>final or semester R-score</strong> by weighting each course’s R-score by its number of credits:</p>
+
+            <p style="margin:0.5rem 0;"><code>Final R = (Σ (Rcourse × credits)) ÷ (Σ credits)</code></p>
+
+            <p>This means high-credit courses have a larger impact on your overall R-score than smaller ones.</p>
+
+            <p>All of these calculations happen automatically inside your dashboard once you upload your grades — no math or spreadsheet setup required.</p>
+
+            <p style="margin-top:1rem; font-size:0.85rem; color:#475569;">
+            <em>Based on public documentation from the Ministère de l’Enseignement supérieur and official CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</em>
             </p>
         </div>
         """,
@@ -181,7 +198,6 @@ def show_landing():
     with footer_left:
         st.markdown("© rscorecalc.com")
     with footer_right:
-        # Streamlit-friendly "link" to ToS: just change page in session_state
         if st.button("Terms of service", help="View terms for rscorecalc.com"):
             st.session_state["page"] = "tos"
             st.rerun()
