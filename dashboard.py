@@ -310,9 +310,8 @@ def show_dashboard():
             st.session_state["target_r"] = new_target
 
     # ---------------- RIGHT PANEL ----------------
-    with right:
+   with right:
         school_options = hs_df["school"].tolist()
-        # Right panel school selector
         selected_hs = st.selectbox(
             "High school / board (for IDGZ & ISGZ)",
             options=school_options,
@@ -321,10 +320,13 @@ def show_dashboard():
             key="school_selector"
         )
 
-# 👇 Force refresh when the school changes
-if st.session_state.get("_last_school") != selected_hs:
-    st.session_state["_last_school"] = selected_hs
-    st.rerun()
+        # 👇 Force a refresh when the school changes
+        if st.session_state.get("_last_school") != selected_hs:
+            st.session_state["_last_school"] = selected_hs
+            st.rerun()
+
+        st.session_state["selected_hs"] = selected_hs
+
         hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
         school_idgz = float(hs_row.get("idgz", 1.0))
         school_isgz = float(hs_row.get("isgz", 0.0))
@@ -333,8 +335,11 @@ if st.session_state.get("_last_school") != selected_hs:
         if not df.empty:
             df["rscore"] = df.apply(
                 lambda row: compute_rscore_school_based(
-                    row["mark"], row["group_avg"], row["group_sd"],
-                    idgz=school_idgz, isgz=school_isgz
+                    row["mark"],
+                    row["group_avg"],
+                    row["group_sd"],
+                    idgz=school_idgz,
+                    isgz=school_isgz
                 ),
                 axis=1,
             )
@@ -385,4 +390,3 @@ if st.session_state.get("_last_school") != selected_hs:
                 st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
             else:
                 st.write("📅 Semester has ended")
-
