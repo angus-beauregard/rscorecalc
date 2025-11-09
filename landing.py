@@ -1,6 +1,6 @@
 # landing.py
 import streamlit as st
-import streamlit.components.v1 as components
+
 def show_landing():
     # ===== blue theme styling =====
     st.markdown(
@@ -148,7 +148,7 @@ def show_landing():
         st.markdown('<div class="pricing-row"><span>Goals + target R</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-
+import streamlit.components.v1 as components
     # ===== ABOUT SECTION =====
 components.html(
     """
@@ -204,6 +204,7 @@ components.html(
         if st.button("Terms of service", help="View terms for rscorecalc.com"):
             st.session_state["page"] = "tos"
             st.rerun()
+
 
 
 
