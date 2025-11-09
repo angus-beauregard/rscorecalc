@@ -309,14 +309,17 @@ def show_dashboard():
             )
             st.session_state["target_r"] = new_target
 
-    # ---------------- RIGHT PANEL ----------------
-   with right:
+       # ---------------- RIGHT PANEL ----------------
+    with right:
         school_options = hs_df["school"].tolist()
         selected_hs = st.selectbox(
             "High school / board (for IDGZ & ISGZ)",
             options=school_options,
-            index=school_options.index(st.session_state.get("selected_hs", school_options[0]))
-            if st.session_state.get("selected_hs", None) in school_options else 0,
+            index=(
+                school_options.index(st.session_state.get("selected_hs", school_options[0]))
+                if st.session_state.get("selected_hs", None) in school_options
+                else 0
+            ),
             key="school_selector"
         )
 
@@ -350,6 +353,7 @@ def show_dashboard():
         gap = round(st.session_state["target_r"] - overall, 2)
 
         col_over, col_sem = st.columns(2)
+
         with col_over:
             st.markdown("### Overview")
             st.markdown("Current R-score")
@@ -368,25 +372,5 @@ def show_dashboard():
                 "John Abbott College": datetime.date(2025, 12, 19),
                 "Marianopolis College": datetime.date(2025, 12, 18),
                 "Dawson College": datetime.date(2025, 12, 19),
-                "Vanier College": datetime.date(2025, 12, 19),
-                "Champlain (St-Lambert)": datetime.date(2025, 12, 19),
-                "Other / custom": None,
-            }
-            cegep = st.selectbox("Select cégep", list(semester_end_dates.keys()))
-            end_date = semester_end_dates[cegep] or st.date_input(
-                "Pick semester end", value=st.session_state["semester_end"]
-            )
-            st.session_state["semester_end"] = end_date
+                "Vanier
 
-            today = datetime.date.today()
-            start_date = st.session_state["semester_start"]
-            total_days = (end_date - start_date).days
-            days_left = (end_date - today).days
-            days_done = (today - start_date).days
-
-            percent = min(max(int((days_done / total_days) * 100), 0), 100) if total_days > 0 else 0
-            st.progress(percent / 100)
-            if days_left >= 0:
-                st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
-            else:
-                st.write("📅 Semester has ended")
