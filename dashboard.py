@@ -261,11 +261,11 @@ def show_dashboard():
                 )
                 st.success(f"Added {cname}")
 
-        # Biggest gains
+                # Biggest gains tab
         with tabs[3]:
-            gains_df = rank_courses_to_improve(df_current, bump=bump_amount, idgz=school_idgz, isgz=school_isgz)
             st.markdown("#### Biggest gains")
             st.write("We simulate improving each course and show which one increases your overall R-score the most.")
+            
             df_current = st.session_state["courses"].copy()
             bump_amount = st.number_input(
                 "Simulate improving each course by this many points:",
@@ -275,36 +275,32 @@ def show_dashboard():
                 step=1,
                 key="bump_in_gains",
             )
+
             if df_current.empty:
                 st.info("Add or upload courses first.")
             else:
+                # compute current R-score with selected school factors
                 df_current["rscore"] = df_current.apply(
-                    lambda row: def rank_courses_to_improve(df: pd.DataFrame, bump: int = 5, idgz: float = 1.0, isgz: float = 0.0) -> pd.DataFrame:
-                                    base = compute_overall_rscore(df)
-                                    rows = []
-                                    for idx, row in df.iterrows():
-                                        tmp = df.copy()
-                                        improved_mark = min(row["mark"] + bump, 100)
-                                        tmp.loc[idx, "rscore"] = compute_rscore_school_based(
-                                            improved_mark,
-                                            row["group_avg"],
-                                            row["group_sd"],
-                                            idgz=idgz,
-                                            isgz=isgz,
-                                        )
-                                        new_overall = compute_overall_rscore(tmp)
-                                        diff = round(new_overall - base, 3)
-                                        rows.append(
-                                            {
-                                                "course_name": row["course_name"],
-                                                "current_mark": row["mark"],
-                                                f"overall_gain_if_+{bump}": diff,
-                                            }
-                                    )
-    return pd.DataFrame(rows).sort_values(f"overall_gain_if_+{bump}", ascending=False)
+                    lambda row: compute_rscore_school_based(
+                        row["mark"],
+                        row["group_avg"],
+                        row["group_sd"],
+                        idgz=school_idgz,
+                        isgz=school_isgz,
+                    ),
+                    axis=1,
+                )
 
-                gains_df = rank_courses_to_improve(df_current, bump=bump_amount)
+                # rank biggest gains
+                gains_df = rank_courses_to_improve(
+                    df_current,
+                    bump=bump_amount,
+                    idgz=school_idgz,
+                    isgz=school_isgz,
+                )
+
                 st.dataframe(gains_df, hide_index=True)
+
 
         # Goals
         with tabs[4]:
@@ -400,6 +396,7 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
+
 
 
 
