@@ -150,40 +150,39 @@ def show_landing():
         st.markdown('</div>', unsafe_allow_html=True)
 
     # ===== ABOUT SECTION =====
-    st.markdown('<div class="section-title">How your R-score is calculated</div>', unsafe_allow_html=True)
     st.markdown(
         """
+        <div class="section-title">How your R-score is calculated</div>
         <div class="about-card">
-            <p><strong>Your R-score shows how well you perform compared to your classmates and your school’s academic strength.</strong></p>
+            <p><b>Your R-score reflects both your individual performance and the academic strength of your peers and school.</b></p>
 
-            <p>Each class you take has its own <em>individual R-score</em> based on the official CÉGEP formula:</p>
+            <p>Each of your courses produces its own <i>individual R-score</i> using the official Québec CÉGEP formula:</p>
 
-            <p><strong>R = ((Z × IDGZ) + ISGZ + C) × D</strong></p>
+            <p style="font-size:1.05rem; margin:0.5rem 0;"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
 
-            <p>Here’s what each part means:</p>
+            <p>Here’s how it works:</p>
             <ul>
-                <li><strong>Z</strong> — measures how far your grade is from the class average, adjusted for how spread out grades are (the standard deviation).</li>
-                <li><strong>IDGZ</strong> — represents the academic strength of your specific class group.</li>
-                <li><strong>ISGZ</strong> — represents the overall academic level of your high school or school board.</li>
-                <li><strong>C</strong> and <strong>D</strong> — constants used to keep R-scores within the standard Québec range (we use C ≈ 35 and D = 1).</li>
+                <li><b>Z</b> — Measures how far your grade is from the class average. It accounts for how spread out everyone’s results are (the standard deviation).</li>
+                <li><b>IDGZ</b> — Reflects how strong your class group is academically compared to others.</li>
+                <li><b>ISGZ</b> — Reflects the overall strength of your high school or school board.</li>
+                <li><b>C</b> and <b>D</b> — Constants used to align scores with Québec’s official range (we use C ≈ 35 and D = 1).</li>
             </ul>
 
-            <p>Once every course has its own R-score, we calculate your <strong>final or semester R-score</strong> using a credit-weighted average:</p>
+            <p>Once every course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using course credits to weight each one:</p>
 
-            <p><strong>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</strong></p>
+            <p style="font-size:1.05rem; margin:0.5rem 0;"><b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b></p>
 
-            <p>This means courses with more credits influence your overall R-score more strongly than smaller ones.</p>
+            <p>That means high-credit courses — like Chemistry or Calculus — have a bigger impact on your overall R-score than smaller ones like labs or tutorials.</p>
 
-            <p>All of these calculations happen automatically in your dashboard as soon as you upload your grades — no setup or manual math required.</p>
+            <p>RScoreCalc does all of this automatically when you upload your CSV or use OCR. It instantly reads your grades, averages, and deviations, applies your school’s IDGZ and ISGZ values, and produces your personalized R-score breakdown — no manual math needed.</p>
 
             <p style="font-size:0.85rem; color:#475569; margin-top:1rem;">
-            <em>Based on public documentation from the Ministère de l’Enseignement supérieur and official CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</em>
+            <i>Based on public documentation from the Ministère de l’Enseignement supérieur and official CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i>
             </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-
 
     # ===== email list =====
     st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
@@ -202,4 +201,5 @@ def show_landing():
         if st.button("Terms of service", help="View terms for rscorecalc.com"):
             st.session_state["page"] = "tos"
             st.rerun()
+
 
