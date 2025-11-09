@@ -21,14 +21,9 @@ IDGZ_CSV_PATH = "idgz+isgz_data.csv"   # high school / board data file
 # load high school / board table
 # ---------------------------------------------------------
 def load_idgz_table(path: str = IDGZ_CSV_PATH) -> pd.DataFrame:
-    """
-    Normalize the uploaded idgz+isgz_data.csv so we always return:
-      school, isgz, idgz
-    """
+    """Normalize the uploaded idgz+isgz_data.csv so we always return: school, isgz, idgz"""
     if not os.path.exists(path):
-        return pd.DataFrame(
-            {"school": ["(default)"], "isgz": [0.0], "idgz": [1.0]}
-        )
+        return pd.DataFrame({"school": ["(default)"], "isgz": [0.0], "idgz": [1.0]})
 
     df = pd.read_csv(path)
     lower_map = {c: c.strip().lower() for c in df.columns}
@@ -75,7 +70,7 @@ ISG_AVG = RSCORE_PARAMS["isg_avg"]
 
 
 # ---------------------------------------------------------
-# R-score math: R = ((Z * IDGZ) + ISGZ + C) * D
+# R-score math
 # ---------------------------------------------------------
 def compute_rscore_school_based(
     mark: float,
@@ -190,13 +185,10 @@ def show_dashboard():
     if "target_r" not in st.session_state:
         st.session_state["target_r"] = 30.0
     if "semester_end" not in st.session_state:
-        # default end date
         st.session_state["semester_end"] = datetime.date(2025, 12, 19)
     if "semester_start" not in st.session_state:
-        # default start date (used for % bar)
         st.session_state["semester_start"] = datetime.date(2025, 8, 25)
 
-    # load high-school data (we will select in the RIGHT panel)
     hs_df = load_idgz_table()
 
     st.markdown("## 📈 RScore Premium Dashboard")
@@ -206,17 +198,9 @@ def show_dashboard():
 
     # ---------------- LEFT: TABS ----------------
     with left:
-        tabs = st.tabs(
-            [
-                "📷 OCR upload",
-                "📄 CSV upload",
-                "✍️ Manual entry",
-                "📈 Biggest gains",
-                "🎯 Goals",
-            ]
-        )
+        tabs = st.tabs(["📷 OCR upload", "📄 CSV upload", "✍️ Manual entry", "📈 Biggest gains", "🎯 Goals"])
 
-        # OCR
+        # --- OCR upload ---
         with tabs[0]:
             st.markdown("#### Upload screenshot (OCR)")
             img_file = st.file_uploader("Drop an image here", type=["png", "jpg", "jpeg"], key="ocr_upload")
@@ -227,7 +211,7 @@ def show_dashboard():
                 st.dataframe(df_ocr, hide_index=True)
                 st.session_state["courses"] = df_ocr
 
-        # CSV
+        # --- CSV upload ---
         with tabs[1]:
             st.markdown("#### Upload CSV")
             st.caption("We accept: Course Name, Your Grade, Class Avg, Std. Dev, Credits (any order, any case).")
@@ -242,9 +226,7 @@ def show_dashboard():
                     st.session_state["courses"] = df_csv
 
             editable_df = st.data_editor(
-                st.session_state["courses"],
-                num_rows="dynamic",
-                key="csv_editor",
+                st.session_state["courses"], num_rows="dynamic", key="csv_editor"
             )
             st.session_state["courses"] = editable_df
 
@@ -256,7 +238,7 @@ def show_dashboard():
                     mime="text/csv",
                 )
 
-        # Manual
+        # --- Manual entry ---
         with tabs[2]:
             st.markdown("#### Add a course manually")
             with st.form("manual_form"):
@@ -280,78 +262,83 @@ def show_dashboard():
                 )
                 st.success(f"Added {cname}")
 
-        # Biggest gains
+        # --- Biggest gains ---
         with tabs[3]:
             st.markdown("#### Biggest gains")
             st.write("We simulate improving each course and show which one increases your overall R-score the most.")
             bump_amount = st.number_input(
                 "Simulate improving each course by this many points:",
-                min_value=1,
-                max_value=15,
-                value=5,
-                step=1,
-                key="bump_in_gains",
+                min_value=1, max_value=15, value=5, step=1, key="bump_in_gains"
             )
+
             df_current = st.session_state["courses"].copy()
+
             if df_current.empty:
                 st.info("Add or upload courses first.")
             else:
-                # we will compute rscore AFTER we get idgz/isgz from the right side
+                # get selected high school + factors
+                selected_hs = st.session_state.get("selected_hs", hs_df.iloc[0]["school"])
+                hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
+                idgz_val = float(hs_row.get("idgz", 1.0))
+                isgz_val = float(hs_row.get("isgz", 0.0))
 
-                # temporary placeholder; the actual values will be applied below in right panel
-                st.info("R-score gains will use the selected school factors on the right.")
+                df_current["rscore"] = df_current.apply(
+                    lambda row: compute_rscore_school_based(
+                        row["mark"], row["group_avg"], row["group_sd"],
+                        idgz=idgz_val, isgz=isgz_val
+                    ),
+                    axis=1,
+                )
 
-        # Goals
+                gain_df = rank_courses_to_improve(df_current, bump=bump_amount,
+                                                  idgz=idgz_val, isgz=isgz_val)
+
+                st.success(f"R-score gains simulated using **{selected_hs}** (IDGZ={idgz_val}, ISGZ={isgz_val}).")
+                st.caption("Higher values indicate the biggest potential boost to your semester R-score.")
+                st.dataframe(gain_df, hide_index=True, use_container_width=True)
+
+        # --- Goals ---
         with tabs[4]:
             st.markdown("#### Goals")
             st.write("Set your target R-score. The overview on the right uses this.")
             new_target = st.number_input(
                 "Target R-score",
-                min_value=0.0,
-                max_value=50.0,
-                value=st.session_state["target_r"],
-                step=0.1,
+                min_value=0.0, max_value=50.0,
+                value=st.session_state["target_r"], step=0.1,
                 key="target_input_goals",
             )
             st.session_state["target_r"] = new_target
 
-    # ---------------- RIGHT: OVERVIEW + school selector + progress ----------------
+    # ---------------- RIGHT PANEL ----------------
     with right:
-        # 1) choose high school here (moved from top, like you asked)
         school_options = hs_df["school"].tolist()
         selected_hs = st.selectbox(
-            "High school / board (for IDGZ & ISGZ)",
-            options=school_options,
+            "High school / board (for IDGZ & ISGZ)", options=school_options,
             index=school_options.index(st.session_state.get("selected_hs", school_options[0]))
-            if st.session_state.get("selected_hs", None) in school_options
-            else 0,
+            if st.session_state.get("selected_hs", None) in school_options else 0,
         )
         st.session_state["selected_hs"] = selected_hs
-        hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
-        school_idgz = float(hs_row.get("idgz", 1.0)) if pd.notna(hs_row.get("idgz", 1.0)) else 1.0
-        school_isgz = float(hs_row.get("isgz", 0.0)) if pd.notna(hs_row.get("isgz", 0.0)) else 0.0
 
-        # 2) compute overview using the chosen school
+        hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
+        school_idgz = float(hs_row.get("idgz", 1.0))
+        school_isgz = float(hs_row.get("isgz", 0.0))
+
         df = st.session_state["courses"].copy()
         if not df.empty:
             df["rscore"] = df.apply(
                 lambda row: compute_rscore_school_based(
-                    row["mark"],
-                    row["group_avg"],
-                    row["group_sd"],
-                    idgz=school_idgz,
-                    isgz=school_isgz,
+                    row["mark"], row["group_avg"], row["group_sd"],
+                    idgz=school_idgz, isgz=school_isgz
                 ),
                 axis=1,
             )
             overall = compute_overall_rscore(df)
         else:
             overall = 0.0
+
         gap = round(st.session_state["target_r"] - overall, 2)
 
         col_over, col_sem = st.columns(2)
-
-        # ----- Overview box -----
         with col_over:
             st.markdown("### Overview")
             st.markdown("Current R-score")
@@ -359,13 +346,11 @@ def show_dashboard():
             st.markdown("Gap to target")
             if df.empty:
                 st.markdown("<h2 style='margin-top:0'>—</h2>", unsafe_allow_html=True)
+            elif gap <= 0:
+                st.markdown("<h2 style='margin-top:0'>On target ✅</h2>", unsafe_allow_html=True)
             else:
-                if gap <= 0:
-                    st.markdown("<h2 style='margin-top:0'>On target ✅</h2>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<h2 style='margin-top:0'>+{gap}</h2>", unsafe_allow_html=True)
+                st.markdown(f"<h2 style='margin-top:0'>+{gap}</h2>", unsafe_allow_html=True)
 
-        # ----- Semester countdown with progress bar -----
         with col_sem:
             st.markdown("### Semester countdown")
             semester_end_dates = {
@@ -377,23 +362,18 @@ def show_dashboard():
                 "Other / custom": None,
             }
             cegep = st.selectbox("Select cégep", list(semester_end_dates.keys()))
-            end_date = semester_end_dates[cegep]
-            if end_date is None:
-                end_date = st.date_input("Pick semester end", value=st.session_state["semester_end"])
+            end_date = semester_end_dates[cegep] or st.date_input(
+                "Pick semester end", value=st.session_state["semester_end"]
+            )
             st.session_state["semester_end"] = end_date
 
-            # dates for progress
             today = datetime.date.today()
             start_date = st.session_state["semester_start"]
             total_days = (end_date - start_date).days
             days_left = (end_date - today).days
             days_done = (today - start_date).days
 
-            if total_days <= 0:
-                percent = 0
-            else:
-                percent = min(max(int((days_done / total_days) * 100), 0), 100)
-
+            percent = min(max(int((days_done / total_days) * 100), 0), 100) if total_days > 0 else 0
             st.progress(percent / 100)
             if days_left >= 0:
                 st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
