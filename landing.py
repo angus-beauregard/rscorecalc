@@ -1,24 +1,45 @@
-    import streamlit as st
+import streamlit as st
 import streamlit.components.v1 as components
 
 def show_landing():
-    # ===== blue theme styling =====
-    st.markdown(
-        """
+    # ===== blue + dark theme CSS =====
+    st.markdown("""
         <style>
         :root {
             --rscore-blue: #0f5fff;
             --rscore-blue-soft: rgba(15, 95, 255, 0.08);
+            --bg-light: #ffffff;
+            --bg-dark: #0f172a;
+            --text-light: #0f172a;
+            --text-dark: #e2e8f0;
+            --subtext-light: #334155;
+            --subtext-dark: #94a3b8;
         }
+
+        body { transition: background 0.3s ease, color 0.3s ease; }
+
+        @media (prefers-color-scheme: dark) {
+            html, body, .block-container {
+                background-color: var(--bg-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            html, body, .block-container {
+                background-color: var(--bg-light);
+                color: var(--text-light);
+            }
+        }
+
         .hero-title {
             font-size: 2.6rem;
             font-weight: 700;
             margin-bottom: 0.25rem;
-            color: #0f172a;
         }
         .hero-subtitle {
             font-size: 1.05rem;
-            color: #334155;
+            color: var(--subtext-light);
             margin-bottom: 1.5rem;
         }
         .pill {
@@ -35,7 +56,6 @@ def show_landing():
             font-weight: 600;
             margin-top: 2.5rem;
             margin-bottom: 0.75rem;
-            color: #0f172a;
         }
         .pricing-table {
             border: 1px solid #e2e8f0;
@@ -47,51 +67,28 @@ def show_landing():
             padding: 0.6rem 1rem;
             border-radius: 1rem 1rem 0 0;
             font-weight: 600;
-            color: #0f172a;
-        }
-        .pricing-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.4rem 1rem;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.9rem;
-        }
-        .pricing-row:last-child {
-            border-bottom: none;
-        }
-        .logo-text {
-            font-weight: 700;
-            color: #0f172a;
-            font-size: 1.15rem;
         }
         .footer {
             font-size: 0.78rem;
-            color: #475569;
             margin-top: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .tos-link {
-            color: #0f5fff;
+            color: var(--rscore-blue);
             text-decoration: underline;
             cursor: pointer;
         }
         </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
-    # ===== HEADER =====
-    st.markdown('<span class="logo-text">rscorecalc.com</span>', unsafe_allow_html=True)
+    # ===== header =====
+    st.markdown('<span style="font-weight:700;">rscorecalc.com</span>', unsafe_allow_html=True)
     st.markdown('<div class="pill">Built for Québec / CEGEP students</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-title">Remove the mystery around your R-score.</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="hero-subtitle">RScoreCalc gives you instant R-score updates, shows you the biggest grade gains, and maps you to your program.</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="hero-subtitle">RScoreCalc gives you instant R-score updates, shows you the biggest grade gains, and maps you to your program.</div>', unsafe_allow_html=True)
 
-    # ===== MAIN BUTTONS =====
     c1, c2 = st.columns([0.5, 0.5])
     with c1:
         if st.button("🚀 Try free calculator", use_container_width=True):
@@ -101,9 +98,10 @@ def show_landing():
         if st.button("🔒 Go premium", use_container_width=True, type="primary"):
             st.session_state["page"] = "auth"
             st.rerun()
+
     st.markdown("No credit card for free plan • Seconds to upload • Made for rscorecalc.com")
 
-    # ===== WHAT YOU GET =====
+    # ===== What you get =====
     st.markdown('<div class="section-title">What you get</div>', unsafe_allow_html=True)
     st.markdown("""
     - ✅ R-score calculator based on your Excel logic  
@@ -112,190 +110,98 @@ def show_landing():
     - 💳 Stripe-ready premium upgrade  
     """)
 
-    # ===== FREE VS PREMIUM =====
+    # ===== Free vs Premium =====
     st.markdown('<div class="section-title">Free vs. Premium</div>', unsafe_allow_html=True)
-    col_free, col_premium = st.columns(2)
-    with col_free:
-        st.markdown('<div class="pricing-table">', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-header">Free</div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Upload CSV manually</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>One dashboard session</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>OCR uploads</span><span>—</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Biggest gains ranking</span><span>—</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Goals + countdown</span><span>—</span></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    with col_premium:
-        st.markdown('<div class="pricing-table">', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-header" style="background:#0f5fff;color:white;">Premium</div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>OCR + CSV + manual</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Unlimited sessions</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Biggest gains tab</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Goals + target R</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+        <div class="pricing-table">
+            <div class="pricing-header">Free</div>
+            <div style="padding:0.8rem 1rem;">Upload CSV manually<br>One dashboard session<br>OCR uploads — No<br>Biggest gains — No<br>Goals — No</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div class="pricing-table">
+            <div class="pricing-header" style="background:#0f5fff;color:white;">Premium</div>
+            <div style="padding:0.8rem 1rem;">OCR + CSV + manual<br>Unlimited sessions<br>Biggest gains tab<br>Goals + target R<br>Stripe subscription</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-# ===== ABOUT SECTION (FULL HTML) =====
-    # ===== ABOUT SECTION (FULL HTML with auto dark/light mode) =====
+    # ===== About / How it works =====
     components.html(
         """
         <style>
-        /* Base variables for light & dark mode */
         :root {
-            --bg-light: #ffffff;
-            --bg-dark: #0f172a;
-            --card-light: #ffffff;
-            --card-dark: #1e293b;
-            --text-light: #0f172a;
-            --text-dark: #e2e8f0;
-            --subtext-light: #334155;
-            --subtext-dark: #94a3b8;
-            --border-light: #e2e8f0;
-            --border-dark: #334155;
-            --accent: #0f5fff;
+            --light-bg: #ffffff;
+            --dark-bg: #1e293b;
+            --light-text: #0f172a;
+            --dark-text: #e2e8f0;
+            --blue: #0f5fff;
+            --gray-light: #475569;
         }
 
         @media (prefers-color-scheme: dark) {
-            body {
-                background-color: var(--bg-dark);
-                color: var(--text-dark);
-            }
-            .rscore-box {
-                background: var(--card-dark);
-                border-color: var(--border-dark);
-                color: var(--text-dark);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-            }
-            .rscore-header, .rscore-equation {
-                color: var(--accent);
-            }
-            .rscore-footer {
-                color: var(--subtext-dark);
-            }
+            .rscore-box { background: var(--dark-bg); color: var(--dark-text); border: 1px solid #334155; }
         }
-
         @media (prefers-color-scheme: light) {
-            body {
-                background-color: var(--bg-light);
-                color: var(--text-light);
-            }
-            .rscore-box {
-                background: var(--card-light);
-                border-color: var(--border-light);
-                color: var(--text-light);
-                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            }
-            .rscore-header, .rscore-equation {
-                color: var(--accent);
-            }
-            .rscore-footer {
-                color: var(--subtext-light);
-            }
-        }
-
-        .rscore-container {
-            font-family: 'Inter', sans-serif;
-            max-width: 900px;
-            margin: auto;
-            padding-bottom: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .rscore-box {
-            border: 1px solid;
-            border-radius: 1rem;
-            padding: 1.5rem 1.8rem;
-            line-height: 1.65;
-            margin-bottom: 0.8rem;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .rscore-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .rscore-equation {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin: 0.5rem 0;
-        }
-
-        .rscore-footer {
-            font-size: 0.85rem;
-            margin-top: 1rem;
+            .rscore-box { background: var(--light-bg); color: var(--light-text); border: 1px solid #e2e8f0; }
         }
         </style>
 
-        <div class="rscore-container">
-            <h3 class="rscore-title">How your R-score is calculated</h3>
-            <div class="rscore-box">
+        <div style="font-family:'Inter',sans-serif;max-width:900px;margin:auto;">
+            <h3 style="font-weight:600;color:var(--light-text);">How your R-score is calculated</h3>
+            <div class="rscore-box" style="border-radius:1rem;padding:1.5rem 1.8rem;line-height:1.65;">
                 <p><b>Your R-score reflects both your performance and the academic strength of your peers and school.</b></p>
-
-                <p>Each of your courses has its own <i>individual R-score</i>, calculated using the same structure used by Québec CÉGEPs:</p>
-
-                <p class="rscore-equation">R = ((Z × IDGZ) + ISGZ + C) × D</p>
-
-                <p>Here’s what that means:</p>
+                <p>Each of your courses has its own <i>individual R-score</i>, calculated using the official Québec CÉGEP formula:</p>
+                <p style="font-size:1.1rem;color:var(--blue);"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
                 <ul style="margin-left:1rem;">
-                    <li><b>Z</b> — Measures how far your grade is from the class average, adjusted by the class’s standard deviation.</li>
-                    <li><b>IDGZ</b> — Reflects how strong your specific class group is academically.</li>
-                    <li><b>ISGZ</b> — Represents the overall strength of your high school or school board.</li>
-                    <li><b>C</b> and <b>D</b> — Constants used to keep R-scores within the official Québec range (we use C ≈ 35, D = 1).</li>
+                    <li><b>Z</b> — How far your grade is from the class average, adjusted for spread (standard deviation).</li>
+                    <li><b>IDGZ</b> — Measures the academic strength of your specific class group.</li>
+                    <li><b>ISGZ</b> — Measures the overall strength of your high school or school board.</li>
+                    <li><b>C</b> and <b>D</b> — Constants that keep scores within Québec’s official R-score range (C ≈ 35, D = 1).</li>
                 </ul>
-
-                <p>Once each course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using the credit weight of each course:</p>
-
-                <p class="rscore-equation">Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</p>
-
-                <p>That means high-credit courses (like Chemistry or Calculus) have a larger impact on your overall R-score than smaller ones.</p>
-
-                <p>RScoreCalc does all of this automatically: when you upload your grades, it reads your averages and deviations, applies your school’s IDGZ and ISGZ values, and calculates your personalized R-score instantly.</p>
-
-                <p class="rscore-footer"><i>Based on official documentation from the Ministère de l’Enseignement supérieur and standard CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i></p>
+                <p>Once each course’s R-score is calculated, your <b>final or semester R-score</b> is weighted by course credits:</p>
+                <p style="font-size:1.1rem;color:var(--blue);"><b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b></p>
+                <p>That means higher-credit courses have a larger impact than smaller ones. RScoreCalc does this instantly when you upload your CSV — no setup required.</p>
+                <p style="font-size:0.85rem;color:var(--gray-light);margin-top:1rem;">
+                    <i>Based on official documentation from the Ministère de l’Enseignement supérieur and standard CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i>
+                </p>
             </div>
         </div>
 
         <script>
-            // Auto-resize Streamlit iframe with small bottom buffer
-            const resizeObserver = new ResizeObserver(entries => {
-                for (let entry of entries) {
-                    window.parent.postMessage({
-                        "type": "streamlit:setFrameHeight",
-                        "height": entry.contentRect.height + 20
-                    }, "*");
-                }
-            });
-            resizeObserver.observe(document.body);
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                window.parent.postMessage({
+                    type: 'streamlit:setFrameHeight',
+                    height: entry.contentRect.height + 20
+                }, '*');
+            }
+        });
+        resizeObserver.observe(document.body);
         </script>
         """,
         height=750,
-        scrolling=False,
+        scrolling=False
     )
 
-# ===== EMAIL LIST =====
+    # ===== Email signup =====
     st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
     st.markdown("Get notified when we add real college averages + mobile app.")
     with st.form("email_capture"):
         email = st.text_input("Email", placeholder="you@example.com")
         submitted = st.form_submit_button("Join the list")
-    if submitted and email:
-        st.success("You're on the list ✅")
+        if submitted and email:
+            st.success("You're on the list ✅")
 
-# ===== FOOTER =====
-st.markdown(
-    """
-    <div class="footer">
-        <div>© rscorecalc.com</div>
-        <div class="tos-link" onclick="window.parent.postMessage({ type: 'page', page: 'tos' }, '*')">Terms of Service</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-
-
-
-
-
-
+    # ===== Footer =====
+    st.markdown(
+        """
+        <div class="footer">
+            <div>© rscorecalc.com</div>
+            <div class="tos-link" onclick="window.parent.postMessage({ type: 'page', page: 'tos' }, '*')">Terms of Service</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
