@@ -100,7 +100,20 @@ def compute_overall_rscore(df: pd.DataFrame) -> float:
         return 0.0
     weighted = (df["rscore"] * df["credits"]).sum() / total_credits
     return round(weighted, 2)
+    
+from supabase import create_client
+supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
+def save_rscore_to_db(user_email: str, rscore: float):
+    """Save or update the user's current R-score."""
+    if not user_email:
+        return
+    try:
+        supabase.table("user_rscores").upsert(
+            {"email": user_email, "rscore": rscore, "timestamp": datetime.datetime.now().isoformat()}
+        ).execute()
+    except Exception as e:
+        st.warning(f"Could not save R-score: {e}")
 
 def rank_courses_to_improve(
     df: pd.DataFrame,
@@ -398,6 +411,7 @@ def show_dashboard():
                         st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
                     else:
                         st.write("📅 Semester has ended")
+
 
 
 
