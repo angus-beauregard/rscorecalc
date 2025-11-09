@@ -30,13 +30,6 @@ def show_landing():
             font-size: 0.75rem;
             margin-bottom: 0.75rem;
         }
-        .card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1rem 1.1rem;
-            height: 100%;
-        }
         .section-title {
             font-size: 1.4rem;
             font-weight: 600;
@@ -84,6 +77,12 @@ def show_landing():
             text-decoration: underline;
             cursor: pointer;
         }
+        .about-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1rem 1.1rem;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -112,12 +111,14 @@ def show_landing():
 
     # ===== "What you get" section under buttons =====
     st.markdown('<div class="section-title">What you get</div>', unsafe_allow_html=True)
-    st.markdown("""
-    - ✅ R-score calculator based on your Excel logic  
-    - 📊 Biggest gains tool  
+    st.markdown(
+        """
+    - ✅ R-score calculator tied to your uploaded grades  
+    - 📊 Biggest gains tool to show what class moves your R the most  
     - 🎯 Goals + semester countdown  
     - 💳 Stripe-ready premium upgrade  
-    """)
+    """
+    )
 
     # ===== free vs premium =====
     st.markdown('<div class="section-title">Free vs. Premium</div>', unsafe_allow_html=True)
@@ -141,6 +142,31 @@ def show_landing():
         st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # ===== ABOUT: how we calculate your R-score =====
+    st.markdown('<div class="section-title">How we calculate your R-score</div>', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="about-card">
+            <p style="margin-bottom:0.5rem;">
+            We follow the same structure used in Québec CÉGEPs, then adjust with the school factors you upload.
+            </p>
+            <ol style="padding-left:1.1rem; margin-top:0.5rem;">
+                <li>We read your grade, the class average, and the class standard deviation (SD) from your CSV / OCR.</li>
+                <li>We compute a Z-score: <code>Z = (your grade – class average) ÷ SD</code>.</li>
+                <li>We look up your high school / board in your <em>IDGZ / ISGZ</em> CSV to get its strength values.</li>
+                <li>We apply your working formula: <strong>R = ((Z × IDGZ) + ISGZ + C) × D</strong>, where we typically use C ≈ 35 and D = 1.</li>
+            </ol>
+            <p style="margin-top:0.5rem;">
+            When we don’t find your school in the file, we fall back to neutral values (IDGZ=1, ISGZ=0) so you still get a number.
+            </p>
+            <p style="margin-top:0.5rem; font-size:0.8rem; color:#475569;">
+            Sources we mirror: MES documentation on the Cote R, public explanations from CÉGEPs, and your own school-strength CSV.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # ===== email list =====
     st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
     st.markdown("Get notified when we add real college averages + mobile app.")
@@ -151,30 +177,11 @@ def show_landing():
         st.success("You're on the list ✅")
 
     # ===== footer =====
-    st.markdown(
-        """
-        <div class="footer">
-            <div>© rscorecalc.com</div>
-            <div class="tos-link" onclick="window.parent.postMessage({ type: 'page', page: 'tos' }, '*')">Terms of Service</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # workaround for navigation in Streamlit
-    st.markdown(
-        """
-        <script>
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'page' && event.data.page === 'tos') {
-                window.parent.postMessage({streamlitRerun: {page: 'tos'}}, '*');
-            }
-        });
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Streamlit-compatible redirect
-    if "_REACTPY" in st.session_state:
-        del st.session_state["_REACTPY"]
+    footer_left, footer_right = st.columns([0.5, 0.5])
+    with footer_left:
+        st.markdown("© rscorecalc.com")
+    with footer_right:
+        # Streamlit-friendly "link" to ToS: just change page in session_state
+        if st.button("Terms of service", help="View terms for rscorecalc.com"):
+            st.session_state["page"] = "tos"
+            st.rerun()
