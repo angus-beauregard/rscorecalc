@@ -321,6 +321,20 @@ def show_dashboard():
                 key="target_input_goals",
             )
             st.session_state["target_r"] = new_target
+def show_university_acceptance(overall):
+    st.markdown("### 🎓 University Chances")
+    cutoff_data = [
+        {"University": "McGill - Engineering", "Cutoff": 33.0},
+        {"University": "McGill - Management", "Cutoff": 31.0},
+        {"University": "Concordia - Science", "Cutoff": 28.0},
+        {"University": "HEC Montréal - Business", "Cutoff": 29.5},
+        {"University": "UdeM - Law", "Cutoff": 32.0},
+    ]
+    df = pd.DataFrame(cutoff_data)
+    df["Status"] = df["Cutoff"].apply(
+        lambda x: "✅ Above cutoff" if overall >= x else ("⚠️ Near cutoff" if overall >= x - 1.0 else "❌ Below cutoff")
+    )
+    st.dataframe(df, hide_index=True, use_container_width=True)
 
        # ---------------- RIGHT PANEL ----------------
     with right:
@@ -411,6 +425,7 @@ def show_dashboard():
                         st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
                     else:
                         st.write("📅 Semester has ended")
+
 
 
 
