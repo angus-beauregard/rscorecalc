@@ -312,13 +312,19 @@ def show_dashboard():
     # ---------------- RIGHT PANEL ----------------
     with right:
         school_options = hs_df["school"].tolist()
+        # Right panel school selector
         selected_hs = st.selectbox(
-            "High school / board (for IDGZ & ISGZ)", options=school_options,
+            "High school / board (for IDGZ & ISGZ)",
+            options=school_options,
             index=school_options.index(st.session_state.get("selected_hs", school_options[0]))
             if st.session_state.get("selected_hs", None) in school_options else 0,
+            key="school_selector"
         )
-        st.session_state["selected_hs"] = selected_hs
 
+# 👇 Force refresh when the school changes
+if st.session_state.get("_last_school") != selected_hs:
+    st.session_state["_last_school"] = selected_hs
+    st.rerun()
         hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
         school_idgz = float(hs_row.get("idgz", 1.0))
         school_isgz = float(hs_row.get("isgz", 0.0))
@@ -379,3 +385,4 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
             else:
                 st.write("📅 Semester has ended")
+
