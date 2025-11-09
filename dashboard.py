@@ -366,11 +366,39 @@ def show_dashboard():
             else:
                 st.markdown(f"<h2 style='margin-top:0'>+{gap}</h2>", unsafe_allow_html=True)
 
-        with col_sem:
+                with col_sem:
             st.markdown("### Semester countdown")
             semester_end_dates = {
                 "John Abbott College": datetime.date(2025, 12, 19),
                 "Marianopolis College": datetime.date(2025, 12, 18),
                 "Dawson College": datetime.date(2025, 12, 19),
-                "Vanier
+                "Vanier College": datetime.date(2025, 12, 19),
+                "Champlain (St-Lambert)": datetime.date(2025, 12, 19),
+                "Other / custom": None,
+            }
+
+            cegep = st.selectbox("Select cégep", list(semester_end_dates.keys()))
+            end_date = semester_end_dates[cegep] or st.date_input(
+                "Pick semester end", value=st.session_state["semester_end"]
+            )
+            st.session_state["semester_end"] = end_date
+
+            today = datetime.date.today()
+            start_date = st.session_state["semester_start"]
+            total_days = (end_date - start_date).days
+            days_left = (end_date - today).days
+            days_done = (today - start_date).days
+
+            if total_days > 0:
+                percent = min(max(int((days_done / total_days) * 100), 0), 100)
+            else:
+                percent = 0
+
+            st.progress(percent / 100)
+            if days_left >= 0:
+                st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
+            else:
+                st.write("📅 Semester has ended")
+
+
 
