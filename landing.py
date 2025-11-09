@@ -206,25 +206,26 @@ components.html(
     scrolling=False,
 )
 
-    # ===== EMAIL LIST =====
-    st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
-    st.markdown("Get notified when we add real college averages + mobile app.")
-    with st.form("email_capture"):
-        email = st.text_input("Email", placeholder="you@example.com")
-        submitted = st.form_submit_button("Join the list")
-    if submitted and email:
-        st.success("You're on the list ✅")
+# ===== EMAIL LIST =====
+st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
+st.markdown("Get notified when we add real college averages + mobile app.")
+with st.form("email_capture"):
+    email = st.text_input("Email", placeholder="you@example.com")
+    submitted = st.form_submit_button("Join the list")
+if submitted and email:
+    st.success("You're on the list ✅")
 
-    # ===== FOOTER =====
-    st.markdown(
-        """
-        <div class="footer">
-            <div>© rscorecalc.com</div>
-            <div class="tos-link" onclick="window.parent.postMessage({ type: 'page', page: 'tos' }, '*')">Terms of Service</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# ===== FOOTER =====
+st.markdown(
+    """
+    <div class="footer">
+        <div>© rscorecalc.com</div>
+        <div class="tos-link" onclick="window.parent.postMessage({ type: 'page', page: 'tos' }, '*')">Terms of Service</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 
 
