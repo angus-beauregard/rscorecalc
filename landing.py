@@ -110,23 +110,90 @@ def show_landing():
     - 💳 Stripe-ready premium upgrade  
     """)
 
-    # ===== Free vs Premium =====
+        # ===== Free vs Premium =====
     st.markdown('<div class="section-title">Free vs. Premium</div>', unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("""
-        <div class="pricing-table">
-            <div class="pricing-header">Free</div>
-            <div style="padding:0.8rem 1rem;">Upload CSV manually<br>One dashboard session<br>OCR uploads — No<br>Biggest gains — No<br>Goals — No</div>
+    st.markdown("""
+        <style>
+        /* Light & dark mode aware pricing cards */
+        @media (prefers-color-scheme: light) {
+            .pricing-wrapper { color: #0f172a; }
+            .pricing-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 1rem;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                transition: all 0.3s ease;
+            }
+            .pricing-header-free {
+                background: #f8fafc;
+                color: #0f172a;
+                padding: 0.7rem 1rem;
+                font-weight: 600;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .pricing-header-premium {
+                background: #0f5fff;
+                color: #ffffff;
+                padding: 0.7rem 1rem;
+                font-weight: 600;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .pricing-body { padding: 0.9rem 1.1rem; font-size: 0.95rem; }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .pricing-wrapper { color: #e2e8f0; }
+            .pricing-card {
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 1rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+                transition: all 0.3s ease;
+            }
+            .pricing-header-free {
+                background: #334155;
+                color: #f1f5f9;
+                padding: 0.7rem 1rem;
+                font-weight: 600;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .pricing-header-premium {
+                background: #0f5fff;
+                color: #ffffff;
+                padding: 0.7rem 1rem;
+                font-weight: 600;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .pricing-body { padding: 0.9rem 1.1rem; font-size: 0.95rem; }
+        }
+        </style>
+
+        <div class="pricing-wrapper">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                <div class="pricing-card" style="flex:1; min-width:250px;">
+                    <div class="pricing-header-free">Free</div>
+                    <div class="pricing-body">
+                        <p>✔ Upload CSV manually</p>
+                        <p>✔ One dashboard session</p>
+                        <p>— OCR uploads</p>
+                        <p>— Biggest gains ranking</p>
+                        <p>— Goals + countdown</p>
+                    </div>
+                </div>
+                <div class="pricing-card" style="flex:1; min-width:250px;">
+                    <div class="pricing-header-premium">Premium</div>
+                    <div class="pricing-body">
+                        <p>✔ OCR + CSV + manual</p>
+                        <p>✔ Unlimited sessions</p>
+                        <p>✔ Biggest gains tab</p>
+                        <p>✔ Goals + target R</p>
+                        <p>✔ Stripe subscription</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown("""
-        <div class="pricing-table">
-            <div class="pricing-header" style="background:#0f5fff;color:white;">Premium</div>
-            <div style="padding:0.8rem 1rem;">OCR + CSV + manual<br>Unlimited sessions<br>Biggest gains tab<br>Goals + target R<br>Stripe subscription</div>
-        </div>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
 
     # ===== About / How it works =====
     components.html(
@@ -205,3 +272,4 @@ def show_landing():
         """,
         unsafe_allow_html=True,
     )
+
