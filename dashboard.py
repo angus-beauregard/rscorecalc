@@ -4,35 +4,76 @@ import os
 import pandas as pd
 import streamlit as st
 
-from ocr_engine import extract_courses_from_image  # keep your stub
+# ---- try to import your OCR stub; if it's not there, make a dummy one ----
+try:
+    from ocr_engine import extract_courses_from_image
+except Exception:
+    def extract_courses_from_image(_bytes):
+        # return empty df if no ocr yet
+        return pd.DataFrame(
+            columns=["course_name", "mark", "group_avg", "group_sd", "credits"]
+        )
 
 EXCEL_RSCORE_FILE = "R-Score Calculator (perfect).xlsx"
-IDGZ_CSV_PATH = "idgz+isgz_data.csv"   # the file you uploaded
+IDGZ_CSV_PATH = "idgz+isgz_data.csv"   # high school / board data file
 
 
+# =====================================================================
+# 1. load high-school / board IDGZ + ISGZ
+# =====================================================================
 def load_idgz_table(path: str = IDGZ_CSV_PATH) -> pd.DataFrame:
-    """Load the high school / board table with IDGZ and ISGZ."""
+    """
+    Load the high school / board table and normalize columns so we always have:
+      - school
+      - isgz
+      - idgz
+    If the file doesn't exist on GitHub / Streamlit, return a safe default.
+    """
     if not os.path.exists(path):
-        # fallback: empty df
         return pd.DataFrame(
             {
-                "School Board": ["(default)"],
-                "ISGZ Estimate": [0.0],
-                "IDGZ Estimate": [1.0],
+                "school": ["(default)"],
+                "isgz": [0.0],
+                "idgz": [1.0],
             }
         )
-    df = pd.read_csv(path)
-    # standardize columns
-    df = df.rename(
-        columns={
-            "School Board": "school",
-            "ISGZ Estimate": "isgz",
-            "IDGZ Estimate": "idgz",
-        }
-    )
-    return df
 
-# ===== 1. Excel params (same idea as before) =====
+    df = pd.read_csv(path)
+
+    # normalize column names to lower
+    lower_map = {c: c.strip().lower() for c in df.columns}
+
+    # find school column
+    school_col = None
+    for cand in ["school board", "school", "high school", "board", "school name"]:
+        if cand in lower_map.values():
+            school_col = [orig for orig, low in lower_map.items() if low == cand][0]
+            break
+
+    # find isgz
+    isgz_col = None
+    for cand in ["isgz estimate", "isgz", "isg", "isgz_estimate"]:
+        if cand in lower_map.values():
+            isgz_col = [orig for orig, low in lower_map.items() if low == cand][0]
+            break
+
+    # find idgz
+    idgz_col = None
+    for cand in ["idgz estimate", "idgz", "idg", "idgz_estimate"]:
+        if cand in lower_map.values():
+            idgz_col = [orig for orig, low in lower_map.items() if low == cand][0]
+            break
+
+    norm = pd.DataFrame()
+    norm["school"] = df[school_col] if school_col else ["(default)"]
+    norm["isgz"] = df[isgz_col] if isgz_col else 0.0
+    norm["idgz"] = df[idgz_col] if idgz_col else 1.0
+    return norm
+
+
+# =====================================================================
+# 2. optional excel params (we keep them but we don't rely on them)
+# =====================================================================
 def load_excel_rscore_params(path: str):
     base_constant = 35
     isg_avg = 0.0
@@ -54,7 +95,10 @@ BASE_CONST = RSCORE_PARAMS["base"]
 ISG_AVG = RSCORE_PARAMS["isg_avg"]
 
 
-# ===== 2. R-score math =====
+# =====================================================================
+# 3. core R-score math (your formula)
+#    R = ((Z * IDGZ) + ISGZ + C) * D
+# =====================================================================
 def compute_rscore_school_based(
     mark: float,
     group_avg: float,
@@ -64,17 +108,10 @@ def compute_rscore_school_based(
     C: float = 35.0,
     D: float = 1.0,
 ) -> float:
-    """
-    R score = ((Zcol * IDGZ) + ISGZ + C) * D
-    - Zcol = (mark - group_avg) / group_sd
-    - IDGZ, ISGZ come from your high school CSV
-    - C, D: we keep C=35, D=1 to stay close to cegep style results
-    """
     if group_sd is None or group_sd == 0:
         z = 0.0
     else:
         z = (mark - group_avg) / group_sd
-
     r = ((z * idgz) + isgz + C) * D
     return round(r, 2)
 
@@ -92,14 +129,23 @@ def compute_overall_rscore(df: pd.DataFrame) -> float:
     return round(weighted, 2)
 
 
-def rank_courses_to_improve(df: pd.DataFrame, bump: int = 5) -> pd.DataFrame:
+def rank_courses_to_improve(
+    df: pd.DataFrame,
+    bump: int = 5,
+    idgz: float = 1.0,
+    isgz: float = 0.0,
+) -> pd.DataFrame:
     base = compute_overall_rscore(df)
     rows = []
     for idx, row in df.iterrows():
         tmp = df.copy()
         improved_mark = min(row["mark"] + bump, 100)
-        tmp.loc[idx, "rscore"] = compute_rscore_excel(
-            improved_mark, row["group_avg"], row["group_sd"]
+        tmp.loc[idx, "rscore"] = compute_rscore_school_based(
+            improved_mark,
+            row["group_avg"],
+            row["group_sd"],
+            idgz=idgz,
+            isgz=isgz,
         )
         new_overall = compute_overall_rscore(tmp)
         diff = round(new_overall - base, 3)
@@ -113,32 +159,24 @@ def rank_courses_to_improve(df: pd.DataFrame, bump: int = 5) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values(f"overall_gain_if_+{bump}", ascending=False)
 
 
-# ===== 3. super-forgiving CSV parsing =====
+# =====================================================================
+# 4. forgiving CSV parsing
+# =====================================================================
 def normalize_col_name(raw: str) -> str:
     s = raw.strip().lower()
     s = s.replace(".", " ").replace("_", " ").replace("-", " ")
     s = " ".join(s.split())
 
-    # course / class
     if any(k in s for k in ["course", "class name", "subject"]) or s == "class":
         return "course_name"
-
-    # grade / mark
     if "grade" in s or "mark" in s or "note" in s or "result" in s or "score" in s:
         return "mark"
-
-    # averages
     if "avg" in s or "average" in s or "class avg" in s or "group avg" in s:
         return "group_avg"
-
-    # standard deviation
     if "std" in s or "sd" in s or "standard" in s or "écart" in s or "ecart" in s:
         return "group_sd"
-
-    # credits
     if "credit" in s or "unit" in s or "unité" in s or "unites" in s:
         return "credits"
-
     return s
 
 
@@ -149,7 +187,6 @@ def coerce_csv_columns(df: pd.DataFrame) -> pd.DataFrame:
     needed = ["course_name", "mark", "group_avg", "group_sd", "credits"]
     missing = [c for c in needed if c not in df.columns]
 
-    # auto-add credits if missing
     if "credits" in missing:
         df["credits"] = 1
         missing.remove("credits")
@@ -163,29 +200,45 @@ def coerce_csv_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df[needed]
 
 
-# ===== 4. main entry point for app.py =====
+# =====================================================================
+# 5. main Streamlit entry
+# =====================================================================
 def show_dashboard():
-    # session defaults
+    # ---- session defaults ----
     if "courses" not in st.session_state:
         st.session_state["courses"] = pd.DataFrame(
             columns=["course_name", "mark", "group_avg", "group_sd", "credits"]
         )
     if "target_r" not in st.session_state:
         st.session_state["target_r"] = 30.0
-    if "selected_school" not in st.session_state:
-        st.session_state["selected_school"] = "(default)"
+    if "semester_end" not in st.session_state:
+        st.session_state["semester_end"] = datetime.date(2025, 12, 19)
+    if "selected_hs" not in st.session_state:
+        st.session_state["selected_hs"] = "(default)"
 
-    # load high school / board data
+    # ---- load HS data and pick school FIRST so we can use its values everywhere ----
     hs_df = load_idgz_table()
-    school_options = hs_df["school"].tolist()
+    hs_options = hs_df["school"].tolist()
+
+    selected_hs = st.selectbox(
+        "Select your high school / board (for IDGZ & ISGZ)",
+        options=hs_options,
+        index=hs_options.index(st.session_state["selected_hs"])
+        if st.session_state["selected_hs"] in hs_options
+        else 0,
+    )
+    st.session_state["selected_hs"] = selected_hs
+
+    hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
+    school_idgz = float(hs_row.get("idgz", 1.0)) if pd.notna(hs_row.get("idgz", 1.0)) else 1.0
+    school_isgz = float(hs_row.get("isgz", 0.0)) if pd.notna(hs_row.get("isgz", 0.0)) else 0.0
 
     st.markdown("## 📈 RScore Premium Dashboard")
-    st.markdown("Upload your grades, get your R-score, track gains, and work toward a target.")
-
+    st.markdown("Upload your grades, we’ll apply your school factors, and show your R-score.")
 
     left, right = st.columns([1.2, 0.8])
 
-    # ===== LEFT TABS =====
+    # ---------------- LEFT: TABS ----------------
     with left:
         tabs = st.tabs(
             [
@@ -197,7 +250,7 @@ def show_dashboard():
             ]
         )
 
-        # OCR
+        # 1) OCR
         with tabs[0]:
             st.markdown("#### Upload screenshot (OCR)")
             img_file = st.file_uploader("Drop an image here", type=["png", "jpg", "jpeg"], key="ocr_upload")
@@ -208,10 +261,10 @@ def show_dashboard():
                 st.dataframe(df_ocr, hide_index=True)
                 st.session_state["courses"] = df_ocr
 
-        # CSV
+        # 2) CSV
         with tabs[1]:
             st.markdown("#### Upload CSV")
-            st.caption("We accept: Course Name, Your Grade, Class Avg, Std. Dev, Credits (any order).")
+            st.caption("We accept: Course Name, Your Grade, Class Avg, Std. Dev, Credits (any order, any case).")
             csv_file = st.file_uploader("Upload CSV", type=["csv"], key="csv_upload")
             if csv_file is not None:
                 try:
@@ -222,6 +275,7 @@ def show_dashboard():
                 else:
                     st.session_state["courses"] = df_csv
 
+            # always show editable version
             editable_df = st.data_editor(
                 st.session_state["courses"],
                 num_rows="dynamic",
@@ -237,7 +291,7 @@ def show_dashboard():
                     mime="text/csv",
                 )
 
-        # Manual
+        # 3) Manual
         with tabs[2]:
             st.markdown("#### Add a course manually")
             with st.form("manual_form"):
@@ -261,11 +315,10 @@ def show_dashboard():
                 )
                 st.success(f"Added {cname}")
 
-                # Biggest gains tab
+        # 4) Biggest gains
         with tabs[3]:
             st.markdown("#### Biggest gains")
             st.write("We simulate improving each course and show which one increases your overall R-score the most.")
-            
             df_current = st.session_state["courses"].copy()
             bump_amount = st.number_input(
                 "Simulate improving each course by this many points:",
@@ -275,11 +328,10 @@ def show_dashboard():
                 step=1,
                 key="bump_in_gains",
             )
-
             if df_current.empty:
                 st.info("Add or upload courses first.")
             else:
-                # compute current R-score with selected school factors
+                # compute current rscore with school factors
                 df_current["rscore"] = df_current.apply(
                     lambda row: compute_rscore_school_based(
                         row["mark"],
@@ -290,22 +342,18 @@ def show_dashboard():
                     ),
                     axis=1,
                 )
-
-                # rank biggest gains
                 gains_df = rank_courses_to_improve(
                     df_current,
                     bump=bump_amount,
                     idgz=school_idgz,
                     isgz=school_isgz,
                 )
-
                 st.dataframe(gains_df, hide_index=True)
 
-
-        # Goals
+        # 5) Goals
         with tabs[4]:
             st.markdown("#### Goals")
-            st.write("Set your target R-score below. The overview on the right will use this.")
+            st.write("Set your target R-score. The overview on the right uses this.")
             new_target = st.number_input(
                 "Target R-score",
                 min_value=0.0,
@@ -316,31 +364,18 @@ def show_dashboard():
             )
             st.session_state["target_r"] = new_target
 
-    # ===== RIGHT OVERVIEW =====
+    # ---------------- RIGHT: OVERVIEW ----------------
     with right:
-        # pick school / board
-        selected_school = st.selectbox(
-            "High school / board (for IDGZ & ISGZ)",
-            options=school_options,
-            index=school_options.index(st.session_state["selected_school"])
-            if st.session_state["selected_school"] in school_options
-            else 0,
-        )
-        st.session_state["selected_school"] = selected_school
-
-        # fetch that row
-        row = hs_df[hs_df["school"] == selected_school].iloc[0]
-        school_idgz = float(row.get("idgz", 1.0)) if not pd.isna(row.get("idgz")) else 1.0
-        school_isgz = float(row.get("isgz", 0.0)) if not pd.isna(row.get("isgz")) else 0.
+        # compute current overall rscore with school factors
         df = st.session_state["courses"].copy()
         if not df.empty:
             df["rscore"] = df.apply(
                 lambda row: compute_rscore_school_based(
                     row["mark"],
-                row["group_avg"],
-                row["group_sd"],
-                idgz=school_idgz,
-                isgz=school_isgz,
+                    row["group_avg"],
+                    row["group_sd"],
+                    idgz=school_idgz,
+                    isgz=school_isgz,
                 ),
                 axis=1,
             )
@@ -375,49 +410,18 @@ def show_dashboard():
                 "Champlain (St-Lambert)": datetime.date(2025, 12, 19),
                 "Other / custom": None,
             }
-            school = st.selectbox(
-                "Select school",
+            cegep = st.selectbox(
+                "Select cégep",
                 list(semester_end_dates.keys()),
-                index=list(semester_end_dates.keys()).index(st.session_state["selected_school"])
-                if st.session_state["selected_school"] in semester_end_dates
-                else 0,
-                key="school_selector_overview",
             )
-            st.session_state["selected_school"] = school
-                # load high school / board data
-            hs_df = load_idgz_table()
-            hs_options = hs_df["school"].tolist()
-
-            # let the user pick their high school
-            selected_hs = st.selectbox(
-            "Select your high school / board (for IDGZ & ISGZ)",
-            options=hs_options,
-            index=hs_options.index(st.session_state.get("selected_hs", hs_options[0]))
-            if st.session_state.get("selected_hs", None) in hs_options
-            else 0,
-            )
-            st.session_state["selected_hs"] = selected_hs
-
-    # pull that row’s IDGZ / ISGZ
-    hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
-    school_idgz = float(hs_row.get("idgz", 1.0)) if pd.notna(hs_row.get("idgz", 1.0)) else 1.0
-    school_isgz = float(hs_row.get("isgz", 0.0)) if pd.notna(hs_row.get("isgz", 0.0)) else 0.0
-
-            today = datetime.date.today()
-            end_date = semester_end_dates[school]
+            end_date = semester_end_dates[cegep]
             if end_date is None:
                 end_date = st.date_input("Pick semester end", value=st.session_state["semester_end"])
             st.session_state["semester_end"] = end_date
 
+            today = datetime.date.today()
             days_left = (end_date - today).days
             if days_left >= 0:
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
-
-
-
-
-
-
-
