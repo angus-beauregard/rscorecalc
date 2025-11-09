@@ -1,5 +1,5 @@
-# landing.py
 import streamlit as st
+import streamlit.components.v1 as components
 
 def show_landing():
     # ===== blue theme styling =====
@@ -77,25 +77,12 @@ def show_landing():
             text-decoration: underline;
             cursor: pointer;
         }
-        .about-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1rem 1.1rem;
-            line-height: 1.6;
-        }
-        code {
-            background: #f1f5f9;
-            padding: 0.15rem 0.35rem;
-            border-radius: 0.3rem;
-            font-size: 0.85rem;
-        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ===== header =====
+    # ===== HEADER =====
     st.markdown('<span class="logo-text">rscorecalc.com</span>', unsafe_allow_html=True)
     st.markdown('<div class="pill">Built for Québec / CEGEP students</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-title">Remove the mystery around your R-score.</div>', unsafe_allow_html=True)
@@ -104,7 +91,7 @@ def show_landing():
         unsafe_allow_html=True,
     )
 
-    # ===== main buttons =====
+    # ===== MAIN BUTTONS =====
     c1, c2 = st.columns([0.5, 0.5])
     with c1:
         if st.button("🚀 Try free calculator", use_container_width=True):
@@ -116,18 +103,16 @@ def show_landing():
             st.rerun()
     st.markdown("No credit card for free plan • Seconds to upload • Made for rscorecalc.com")
 
-    # ===== "What you get" section under buttons =====
+    # ===== WHAT YOU GET =====
     st.markdown('<div class="section-title">What you get</div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-    - ✅ R-score calculator tied to your real grades  
-    - 📊 “Biggest gains” tool showing what class raises your R the most  
-    - 🎯 Goal tracker + semester countdown  
+    st.markdown("""
+    - ✅ R-score calculator based on your Excel logic  
+    - 📊 Biggest gains tool  
+    - 🎯 Goals + semester countdown  
     - 💳 Stripe-ready premium upgrade  
-    """
-    )
+    """)
 
-    # ===== free vs premium =====
+    # ===== FREE VS PREMIUM =====
     st.markdown('<div class="section-title">Free vs. Premium</div>', unsafe_allow_html=True)
     col_free, col_premium = st.columns(2)
     with col_free:
@@ -148,46 +133,45 @@ def show_landing():
         st.markdown('<div class="pricing-row"><span>Goals + target R</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-import streamlit.components.v1 as components
-    # ===== ABOUT SECTION =====
-components.html(
-    """
-    <div style="font-family: 'Inter', sans-serif; max-width: 900px; margin: auto;">
-        <h3 style="color:#0f172a; font-size:1.4rem; font-weight:600;">How your R-score is calculated</h3>
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.3rem 1.5rem; line-height:1.6;">
-            <p><b>Your R-score reflects both your performance and the academic strength of your peers and school.</b></p>
 
-            <p>Each of your courses has its own <i>individual R-score</i>, calculated using the same structure used by Québec CÉGEPs:</p>
+    # ===== ABOUT SECTION (FULL HTML) =====
+    components.html(
+        """
+        <div style="font-family: 'Inter', sans-serif; max-width: 900px; margin: auto;">
+            <h3 style="color:#0f172a; font-size:1.4rem; font-weight:600;">How your R-score is calculated</h3>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.3rem 1.5rem; line-height:1.6;">
+                <p><b>Your R-score reflects both your performance and the academic strength of your peers and school.</b></p>
 
-            <p style="font-size:1.1rem; margin:0.5rem 0;"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
+                <p>Each of your courses has its own <i>individual R-score</i>, calculated using the same structure used by Québec CÉGEPs:</p>
 
-            <p>Here’s what that means:</p>
-            <ul style="margin-left:1rem;">
-                <li><b>Z</b> — Measures how far your grade is from the class average, adjusted by the class’s standard deviation.</li>
-                <li><b>IDGZ</b> — Reflects how strong your specific class group is academically.</li>
-                <li><b>ISGZ</b> — Represents the overall strength of your high school or school board.</li>
-                <li><b>C</b> and <b>D</b> — Constants used to keep R-scores within the official Québec range (we use C ≈ 35, D = 1).</li>
-            </ul>
+                <p style="font-size:1.1rem; margin:0.5rem 0;"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
 
-            <p>Once each course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using the credit weight of each course:</p>
+                <p>Here’s what that means:</p>
+                <ul style="margin-left:1rem;">
+                    <li><b>Z</b> — Measures how far your grade is from the class average, adjusted by the class’s standard deviation.</li>
+                    <li><b>IDGZ</b> — Reflects how strong your specific class group is academically.</li>
+                    <li><b>ISGZ</b> — Represents the overall strength of your high school or school board.</li>
+                    <li><b>C</b> and <b>D</b> — Constants used to keep R-scores within the official Québec range (we use C ≈ 35, D = 1).</li>
+                </ul>
 
-            <p style="font-size:1.1rem; margin:0.5rem 0;"><b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b></p>
+                <p>Once each course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using the credit weight of each course:</p>
 
-            <p>That means high-credit courses (like Chemistry or Calculus) have a larger impact on your overall R-score than smaller ones.</p>
+                <p style="font-size:1.1rem; margin:0.5rem 0;"><b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b></p>
 
-            <p>RScoreCalc does all of this automatically: when you upload your grades, it reads your averages and deviations, applies your school’s IDGZ and ISGZ values, and calculates your personalized R-score instantly.</p>
+                <p>That means high-credit courses (like Chemistry or Calculus) have a larger impact on your overall R-score than smaller ones.</p>
 
-            <p style="font-size:0.85rem; color:#475569; margin-top:1rem;">
-                <i>Based on official documentation from the Ministère de l’Enseignement supérieur and standard CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i>
-            </p>
+                <p>RScoreCalc does all of this automatically: when you upload your grades, it reads your averages and deviations, applies your school’s IDGZ and ISGZ values, and calculates your personalized R-score instantly.</p>
+
+                <p style="font-size:0.85rem; color:#475569; margin-top:1rem;">
+                    <i>Based on official documentation from the Ministère de l’Enseignement supérieur and standard CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i>
+                </p>
+            </div>
         </div>
-    </div>
-    """,
-    height=600,
-)
+        """,
+        height=600,
+    )
 
-
-    # ===== email list =====
+    # ===== EMAIL LIST =====
     st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
     st.markdown("Get notified when we add real college averages + mobile app.")
     with st.form("email_capture"):
@@ -196,15 +180,13 @@ components.html(
     if submitted and email:
         st.success("You're on the list ✅")
 
-    # ===== footer =====
-    footer_left, footer_right = st.columns([0.5, 0.5])
-    with footer_left:
-        st.markdown("© rscorecalc.com")
-    with footer_right:
-        if st.button("Terms of service", help="View terms for rscorecalc.com"):
-            st.session_state["page"] = "tos"
-            st.rerun()
-
-
-
-
+    # ===== FOOTER =====
+    st.markdown(
+        """
+        <div class="footer">
+            <div>© rscorecalc.com</div>
+            <div class="tos-link" onclick="window.parent.postMessage({ type: 'page', page: 'tos' }, '*')">Terms of Service</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
