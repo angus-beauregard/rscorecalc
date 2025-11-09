@@ -384,6 +384,24 @@ def show_dashboard():
                 key="school_selector_overview",
             )
             st.session_state["selected_school"] = school
+                # load high school / board data
+            hs_df = load_idgz_table()
+            hs_options = hs_df["school"].tolist()
+
+            # let the user pick their high school
+            selected_hs = st.selectbox(
+            "Select your high school / board (for IDGZ & ISGZ)",
+            options=hs_options,
+            index=hs_options.index(st.session_state.get("selected_hs", hs_options[0]))
+            if st.session_state.get("selected_hs", None) in hs_options
+            else 0,
+            )
+            st.session_state["selected_hs"] = selected_hs
+
+    # pull that row’s IDGZ / ISGZ
+    hs_row = hs_df[hs_df["school"] == selected_hs].iloc[0]
+    school_idgz = float(hs_row.get("idgz", 1.0)) if pd.notna(hs_row.get("idgz", 1.0)) else 1.0
+    school_isgz = float(hs_row.get("isgz", 0.0)) if pd.notna(hs_row.get("isgz", 0.0)) else 0.0
 
             today = datetime.date.today()
             end_date = semester_end_dates[school]
@@ -396,6 +414,7 @@ def show_dashboard():
                 st.write(f"📅 **{days_left} days** left in the semester")
             else:
                 st.write("📅 Semester has ended")
+
 
 
 
