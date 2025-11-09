@@ -137,14 +137,29 @@ def show_landing():
     # ===== ABOUT SECTION (FULL HTML) =====
     components.html(
         """
-        <div style="font-family: 'Inter', sans-serif; max-width: 900px; margin: auto;">
-            <h3 style="color:#0f172a; font-size:1.4rem; font-weight:600;">How your R-score is calculated</h3>
-            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.3rem 1.5rem; line-height:1.6;">
+        <div style="
+            font-family: 'Inter', sans-serif;
+            max-width: 900px;
+            margin: auto;
+            padding-bottom: 2rem;
+        ">
+            <h3 style="color:#0f172a; font-size:1.4rem; font-weight:600; margin-bottom:1rem;">
+                How your R-score is calculated
+            </h3>
+
+            <div style="
+                background:#ffffff;
+                border:1px solid #e2e8f0;
+                border-radius:1rem;
+                padding:1.5rem 1.8rem;
+                line-height:1.65;
+                box-shadow:0 2px 6px rgba(0,0,0,0.04);
+            ">
                 <p><b>Your R-score reflects both your performance and the academic strength of your peers and school.</b></p>
 
                 <p>Each of your courses has its own <i>individual R-score</i>, calculated using the same structure used by Québec CÉGEPs:</p>
 
-                <p style="font-size:1.1rem; margin:0.5rem 0;"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
+                <p style="font-size:1.1rem; margin:0.5rem 0; color:#0f5fff;"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
 
                 <p>Here’s what that means:</p>
                 <ul style="margin-left:1rem;">
@@ -156,7 +171,7 @@ def show_landing():
 
                 <p>Once each course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using the credit weight of each course:</p>
 
-                <p style="font-size:1.1rem; margin:0.5rem 0;"><b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b></p>
+                <p style="font-size:1.1rem; margin:0.5rem 0; color:#0f5fff;"><b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b></p>
 
                 <p>That means high-credit courses (like Chemistry or Calculus) have a larger impact on your overall R-score than smaller ones.</p>
 
@@ -167,8 +182,19 @@ def show_landing():
                 </p>
             </div>
         </div>
+
+        <script>
+            // Auto-resize Streamlit iframe to fit content
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    window.parent.postMessage({ "type": "streamlit:setFrameHeight", "height": entry.contentRect.height + 50 }, "*");
+                }
+            });
+            resizeObserver.observe(document.body);
+        </script>
         """,
-        height=600,
+        height=1000,
+        scrolling=False,
     )
 
     # ===== EMAIL LIST =====
@@ -190,3 +216,4 @@ def show_landing():
         """,
         unsafe_allow_html=True,
     )
+
