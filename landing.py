@@ -134,77 +134,144 @@ def show_landing():
         st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ===== ABOUT SECTION (FULL HTML) =====
-components.html(
-    """
-    <div style="
-        font-family: 'Inter', sans-serif;
-        max-width: 900px;
-        margin: auto;
-        padding-bottom: 0.5rem;
-    ">
-        <h3 style="color:#0f172a; font-size:1.4rem; font-weight:600; margin-bottom:1rem;">
-            How your R-score is calculated
-        </h3>
+# ===== ABOUT SECTION (FULL HTML) =====
+    # ===== ABOUT SECTION (FULL HTML with auto dark/light mode) =====
+    components.html(
+        """
+        <style>
+        /* Base variables for light & dark mode */
+        :root {
+            --bg-light: #ffffff;
+            --bg-dark: #0f172a;
+            --card-light: #ffffff;
+            --card-dark: #1e293b;
+            --text-light: #0f172a;
+            --text-dark: #e2e8f0;
+            --subtext-light: #334155;
+            --subtext-dark: #94a3b8;
+            --border-light: #e2e8f0;
+            --border-dark: #334155;
+            --accent: #0f5fff;
+        }
 
-        <div style="
-            background:#ffffff;
-            border:1px solid #e2e8f0;
-            border-radius:1rem;
-            padding:1.5rem 1.8rem;
-            line-height:1.65;
-            box-shadow:0 2px 6px rgba(0,0,0,0.04);
-            margin-bottom:0.8rem;
-        ">
-            <p><b>Your R-score reflects both your performance and the academic strength of your peers and school.</b></p>
-
-            <p>Each of your courses has its own <i>individual R-score</i>, calculated using the same structure used by Québec CÉGEPs:</p>
-
-            <p style="font-size:1.1rem; margin:0.5rem 0; color:#0f5fff;"><b>R = ((Z × IDGZ) + ISGZ + C) × D</b></p>
-
-            <p>Here’s what that means:</p>
-            <ul style="margin-left:1rem;">
-                <li><b>Z</b> — Measures how far your grade is from the class average, adjusted by the class’s standard deviation.</li>
-                <li><b>IDGZ</b> — Reflects how strong your specific class group is academically.</li>
-                <li><b>ISGZ</b> — Represents the overall strength of your high school or school board.</li>
-                <li><b>C</b> and <b>D</b> — Constants used to keep R-scores within the official Québec range (we use C ≈ 35, D = 1).</li>
-            </ul>
-
-            <p>Once each course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using the credit weight of each course:</p>
-
-            <p style="font-size:1.1rem; margin:0.5rem 0; color:#0f5fff;">
-                <b>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</b>
-            </p>
-
-            <p>That means high-credit courses (like Chemistry or Calculus) have a larger impact on your overall R-score than smaller ones.</p>
-
-            <p>RScoreCalc does all of this automatically: when you upload your grades, it reads your averages and deviations, applies your school’s IDGZ and ISGZ values, and calculates your personalized R-score instantly.</p>
-
-            <p style="font-size:0.85rem; color:#475569; margin-top:1rem;">
-                <i>Based on official documentation from the Ministère de l’Enseignement supérieur and standard CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i>
-            </p>
-        </div>
-    </div>
-
-    <script>
-        // Auto-resize so mobile (more line wrapping) doesn't get cut off
-        const ro = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                const h = entry.contentRect.height;
-                // add a bit more buffer for phones
-                window.parent.postMessage({
-                    "type": "streamlit:setFrameHeight",
-                    "height": h + 40
-                }, "*");
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--bg-dark);
+                color: var(--text-dark);
             }
-        });
-        ro.observe(document.body);
-    </script>
-    """,
-    # give phones extra room to start with
-    height=950,
-    scrolling=False,
-)
+            .rscore-box {
+                background: var(--card-dark);
+                border-color: var(--border-dark);
+                color: var(--text-dark);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            }
+            .rscore-header, .rscore-equation {
+                color: var(--accent);
+            }
+            .rscore-footer {
+                color: var(--subtext-dark);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: var(--bg-light);
+                color: var(--text-light);
+            }
+            .rscore-box {
+                background: var(--card-light);
+                border-color: var(--border-light);
+                color: var(--text-light);
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            }
+            .rscore-header, .rscore-equation {
+                color: var(--accent);
+            }
+            .rscore-footer {
+                color: var(--subtext-light);
+            }
+        }
+
+        .rscore-container {
+            font-family: 'Inter', sans-serif;
+            max-width: 900px;
+            margin: auto;
+            padding-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .rscore-box {
+            border: 1px solid;
+            border-radius: 1rem;
+            padding: 1.5rem 1.8rem;
+            line-height: 1.65;
+            margin-bottom: 0.8rem;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .rscore-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .rscore-equation {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .rscore-footer {
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        </style>
+
+        <div class="rscore-container">
+            <h3 class="rscore-title">How your R-score is calculated</h3>
+            <div class="rscore-box">
+                <p><b>Your R-score reflects both your performance and the academic strength of your peers and school.</b></p>
+
+                <p>Each of your courses has its own <i>individual R-score</i>, calculated using the same structure used by Québec CÉGEPs:</p>
+
+                <p class="rscore-equation">R = ((Z × IDGZ) + ISGZ + C) × D</p>
+
+                <p>Here’s what that means:</p>
+                <ul style="margin-left:1rem;">
+                    <li><b>Z</b> — Measures how far your grade is from the class average, adjusted by the class’s standard deviation.</li>
+                    <li><b>IDGZ</b> — Reflects how strong your specific class group is academically.</li>
+                    <li><b>ISGZ</b> — Represents the overall strength of your high school or school board.</li>
+                    <li><b>C</b> and <b>D</b> — Constants used to keep R-scores within the official Québec range (we use C ≈ 35, D = 1).</li>
+                </ul>
+
+                <p>Once each course’s R-score is calculated, we combine them into your <b>final or semester R-score</b> using the credit weight of each course:</p>
+
+                <p class="rscore-equation">Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</p>
+
+                <p>That means high-credit courses (like Chemistry or Calculus) have a larger impact on your overall R-score than smaller ones.</p>
+
+                <p>RScoreCalc does all of this automatically: when you upload your grades, it reads your averages and deviations, applies your school’s IDGZ and ISGZ values, and calculates your personalized R-score instantly.</p>
+
+                <p class="rscore-footer"><i>Based on official documentation from the Ministère de l’Enseignement supérieur and standard CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</i></p>
+            </div>
+        </div>
+
+        <script>
+            // Auto-resize Streamlit iframe with small bottom buffer
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    window.parent.postMessage({
+                        "type": "streamlit:setFrameHeight",
+                        "height": entry.contentRect.height + 20
+                    }, "*");
+                }
+            });
+            resizeObserver.observe(document.body);
+        </script>
+        """,
+        height=750,
+        scrolling=False,
+    )
 
 # ===== EMAIL LIST =====
 st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
@@ -225,6 +292,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 
 
