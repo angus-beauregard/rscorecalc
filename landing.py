@@ -154,35 +154,36 @@ def show_landing():
     st.markdown(
         """
         <div class="about-card">
-            <p><strong>Your R-score represents how you perform compared to your classmates and your school’s overall academic strength.</strong></p>
+            <p><strong>Your R-score shows how well you perform compared to your classmates and your school’s academic strength.</strong></p>
 
-            <p>Each course you take generates its own <em>individual R-score</em> using the official structure used by Québec CÉGEPs:</p>
+            <p>Each class you take has its own <em>individual R-score</em> based on the official CÉGEP formula:</p>
 
-            <p style="margin:0.5rem 0;"><code>R = ((Z × IDGZ) + ISGZ + C) × D</code></p>
+            <p><strong>R = ((Z × IDGZ) + ISGZ + C) × D</strong></p>
 
             <p>Here’s what each part means:</p>
-            <ul style="margin-left:1rem;">
-                <li><strong>Z</strong> – a standardized measure of how far your grade is from the class average, based on the class’s standard deviation.</li>
-                <li><strong>IDGZ</strong> – reflects how strong your specific class group is academically.</li>
-                <li><strong>ISGZ</strong> – reflects how strong your high school or school board is overall.</li>
-                <li><strong>C</strong> and <strong>D</strong> – constants used to keep R-scores in the typical Québec range (we use C ≈ 35 and D = 1).</li>
+            <ul>
+                <li><strong>Z</strong> — measures how far your grade is from the class average, adjusted for how spread out grades are (the standard deviation).</li>
+                <li><strong>IDGZ</strong> — represents the academic strength of your specific class group.</li>
+                <li><strong>ISGZ</strong> — represents the overall academic level of your high school or school board.</li>
+                <li><strong>C</strong> and <strong>D</strong> — constants used to keep R-scores within the standard Québec range (we use C ≈ 35 and D = 1).</li>
             </ul>
 
-            <p>Once every course has its own R-score, we calculate your <strong>final or semester R-score</strong> by weighting each course’s R-score by its number of credits:</p>
+            <p>Once every course has its own R-score, we calculate your <strong>final or semester R-score</strong> using a credit-weighted average:</p>
 
-            <p style="margin:0.5rem 0;"><code>Final R = (Σ (Rcourse × credits)) ÷ (Σ credits)</code></p>
+            <p><strong>Final R = (Σ (R<sub>course</sub> × credits)) ÷ (Σ credits)</strong></p>
 
-            <p>This means high-credit courses have a larger impact on your overall R-score than smaller ones.</p>
+            <p>This means courses with more credits influence your overall R-score more strongly than smaller ones.</p>
 
-            <p>All of these calculations happen automatically inside your dashboard once you upload your grades — no math or spreadsheet setup required.</p>
+            <p>All of these calculations happen automatically in your dashboard as soon as you upload your grades — no setup or manual math required.</p>
 
-            <p style="margin-top:1rem; font-size:0.85rem; color:#475569;">
+            <p style="font-size:0.85rem; color:#475569; margin-top:1rem;">
             <em>Based on public documentation from the Ministère de l’Enseignement supérieur and official CÉGEP R-score methodology, adapted for transparency through RScoreCalc.</em>
             </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
 
     # ===== email list =====
     st.markdown('<div class="section-title">Join the list</div>', unsafe_allow_html=True)
@@ -201,3 +202,4 @@ def show_landing():
         if st.button("Terms of service", help="View terms for rscorecalc.com"):
             st.session_state["page"] = "tos"
             st.rerun()
+
