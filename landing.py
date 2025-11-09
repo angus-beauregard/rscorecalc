@@ -134,14 +134,13 @@ def show_landing():
         st.markdown('<div class="pricing-row"><span>Stripe subscription</span><span>✔</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ===== ABOUT SECTION (FULL HTML) =====
+        # ===== ABOUT SECTION (FULL HTML) =====
     components.html(
         """
         <div style="
             font-family: 'Inter', sans-serif;
             max-width: 900px;
             margin: auto;
-            padding-bottom: 2rem;
         ">
             <h3 style="color:#0f172a; font-size:1.4rem; font-weight:600; margin-bottom:1rem;">
                 How your R-score is calculated
@@ -184,16 +183,19 @@ def show_landing():
         </div>
 
         <script>
-            // Auto-resize Streamlit iframe to fit content
+            // Auto-resize Streamlit iframe to fit content exactly
             const resizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
-                    window.parent.postMessage({ "type": "streamlit:setFrameHeight", "height": entry.contentRect.height + 50 }, "*");
+                    window.parent.postMessage({
+                        "type": "streamlit:setFrameHeight",
+                        "height": entry.contentRect.height
+                    }, "*");
                 }
             });
             resizeObserver.observe(document.body);
         </script>
         """,
-        height=1000,
+        height=700,   # was 1000 before
         scrolling=False,
     )
 
@@ -216,4 +218,5 @@ def show_landing():
         """,
         unsafe_allow_html=True,
     )
+
 
