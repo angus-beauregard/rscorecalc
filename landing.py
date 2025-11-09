@@ -37,11 +37,31 @@ def show_landing():
             font-weight: 700;
             margin-bottom: 0.25rem;
         }
+        @media (prefers-color-scheme: dark) {
+            .hero-title {
+                color: #ffffff;
+                text-shadow: 0 0 10px rgba(15,95,255,0.25);
+            }
+        }
+
         .hero-subtitle {
             font-size: 1.05rem;
-            color: var(--subtext-light);
             margin-bottom: 1.5rem;
+            transition: color 0.3s ease;
         }
+
+        @media (prefers-color-scheme: light) {
+            .hero-subtitle {
+                color: #334155;  /* dark gray for light mode */
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .hero-subtitle {
+                color: #ffffff;  /* bright white for dark mode */
+            }
+        }
+
         .pill {
             background: var(--rscore-blue-soft);
             color: var(--rscore-blue);
@@ -272,4 +292,5 @@ def show_landing():
         """,
         unsafe_allow_html=True,
     )
+
 
