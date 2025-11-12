@@ -102,10 +102,19 @@ def compute_overall_rscore(df: pd.DataFrame) -> float:
     return round(weighted, 2)
     
 from supabase import create_client
-supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+import os
+
+def get_supabase():
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY")
+
+    if not url or not key:
+        raise Exception("Supabase credentials are missing")
+
+    return create_client(url, key)
 
 def save_rscore_to_db(user_email: str, rscore: float):
-    """Save or update the user's current R-score."""
+    supabase = get_supabase()
     if not user_email:
         return
     try:
@@ -425,6 +434,7 @@ def show_university_acceptance(overall):
                         st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
                     else:
                         st.write("📅 Semester has ended")
+
 
 
 
