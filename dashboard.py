@@ -199,39 +199,47 @@ def coerce_csv_columns(df: pd.DataFrame) -> pd.DataFrame:
 # main Streamlit page
 # ---------------------------------------------------------
 def show_dashboard():
-    # session defaults
-    if "courses" not in st.session_state:
-        st.session_state["courses"] = pd.DataFrame(
-            columns=["course_name", "mark", "group_avg", "group_sd", "credits"]
+
+    st.title("📊 RScore Premium Dashboard")
+    st.write("Upload your grades, we’ll apply school factors, and compute your R-score.")
+
+    # ----------------------------
+    # LEFT COLUMN (OVERVIEW PANEL)
+    # ----------------------------
+    col1, col2 = st.columns([1, 2], gap="large")
+
+    with col1:
+
+        st.markdown("### 🏫 School Selector")
+        school = st.selectbox(
+            "Choose your school",
+            [
+                "John Abbott College",
+                "Marianopolis College",
+                "Vanier College",
+                "Dawson College",
+                "Champlain College",
+                "Heritage College",
+                "Ahuntsic College",
+            ],
+            index=0
         )
-    if "target_r" not in st.session_state:
-        st.session_state["target_r"] = 30.0
-    if "semester_end" not in st.session_state:
-        st.session_state["semester_end"] = datetime.date(2025, 12, 19)
-    if "semester_start" not in st.session_state:
-        st.session_state["semester_start"] = datetime.date(2025, 8, 25)
 
-    hs_df = load_idgz_table()
+        st.markdown("### 🎯 R-Score Overview")
+        if "final_rscore" in st.session_state:
+            st.metric("Final R-Score", st.session_state["final_rscore"])
+        else:
+            st.metric("Final R-Score", "—")
 
-    st.markdown("## 📈 RScore Premium Dashboard")
-    st.markdown("Upload your grades, we’ll apply your school factors, and show your R-score.")
+        st.markdown("### ⏳ Semester Countdown")
+        semester_end = datetime.date(2025, 12, 20)
+        remaining = (semester_end - datetime.date.today()).days
 
-    left, right = st.columns([1.2, 0.8])
+        if remaining >= 0:
+            st.write(f"{remaining} days remaining")
+        else:
+            st.write("Semester complete 🎉")
 
-    # ---------------- LEFT: TABS ----------------
-    with left:
-        tabs = st.tabs(["📷 OCR upload", "📄 CSV upload", "✍️ Manual entry", "📈 Biggest gains", "🎯 Goals"])
-
-        # --- OCR upload ---
-        with tabs[0]:
-            st.markdown("#### Upload screenshot (OCR)")
-            img_file = st.file_uploader("Drop an image here", type=["png", "jpg", "jpeg"], key="ocr_upload")
-            if img_file is not None:
-                img_bytes = img_file.read()
-                df_ocr = extract_courses_from_image(img_bytes)
-                st.success("OCR processed.")
-                st.dataframe(df_ocr, hide_index=True)
-                st.session_state["courses"] = df_ocr
 
         # --- CSV upload ---
         with tabs[1]:
@@ -434,6 +442,7 @@ def show_university_acceptance(overall):
                         st.write(f"📅 **{days_left} days** left in the semester ({percent}%)")
                     else:
                         st.write("📅 Semester has ended")
+
 
 
 
